@@ -7,6 +7,8 @@
 
 #include "type_traits.h"
 
+#include <iterator>
+
 namespace mystl
 {
 
@@ -31,6 +33,7 @@ template <class Category, class T, class Distance = ptrdiff_t,
 
 // iterator traits
 
+// 判断迭代器是否有 iterator_category 成员
 template <class T>
 struct has_iterator_cat
 {
@@ -42,6 +45,7 @@ public:
   static const bool value = sizeof(test<T>(0)) == sizeof(char);
 };
 
+// iterator_traits 模板
 template <class Iterator, bool>
 struct iterator_traits_impl {};
 
@@ -55,6 +59,7 @@ struct iterator_traits_impl<Iterator, true>
   typedef typename Iterator::difference_type   difference_type;
 };
 
+// 判断 Iterator 是否有 iterator_category 成员类型。如果存在，则值为 true，否则为 false
 template <class Iterator, bool>
 struct iterator_traits_helper {};
 
@@ -100,9 +105,11 @@ struct has_iterator_cat_of
 };
 
 // 萃取某种迭代器
+// false 偏特化版本
 template <class T, class U>
 struct has_iterator_cat_of<T, U, false> : public m_false_type {};
 
+// true 偏特化版本----> value 为 true 表示 T 可以转化为 U 反之
 template <class Iter>
 struct is_input_iterator : public has_iterator_cat_of<Iter, input_iterator_tag> {};
 
@@ -118,6 +125,7 @@ struct is_bidirectional_iterator : public has_iterator_cat_of<Iter, bidirectiona
 template <class Iter>
 struct is_random_access_iterator : public has_iterator_cat_of<Iter, random_access_iterator_tag> {};
 
+// 判断是否是输入或输出迭代器
 template <class Iterator>
 struct is_iterator :
   public m_bool_constant<is_input_iterator<Iterator>::value ||
@@ -169,8 +177,7 @@ distance_dispatch(InputIterator first, InputIterator last, input_iterator_tag)
 // distance 的 random_access_iterator_tag 的版本
 template <class RandomIter>
 typename iterator_traits<RandomIter>::difference_type
-distance_dispatch(RandomIter first, RandomIter last,
-                  random_access_iterator_tag)
+distance_dispatch(RandomIter first, RandomIter last, random_access_iterator_tag)
 {
   return last - first;
 }
@@ -238,9 +245,9 @@ public:
 
 public:
   // 构造函数
-  reverse_iterator() {}
+  reverse_iterator() = default;
   explicit reverse_iterator(iterator_type i) :current(i) {}
-  reverse_iterator(const self& rhs) :current(rhs.current) {}
+  reverse_iterator(const self& rhs) :current(rhs.current) {}  //拷贝构造
 
 public:
   // 取出对应的正向迭代器
