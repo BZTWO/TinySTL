@@ -269,13 +269,13 @@ public:
   self& operator++()
   {
     --current;
-    return *this;
+    return *this;  //左值
   }
   self operator++(int)
   {
     self tmp = *this;
     --current;
-    return tmp;
+    return tmp;  //右值
   }
   // 后退(--)变为前进(++)
   self& operator--()
@@ -290,7 +290,7 @@ public:
     return tmp;
   }
 
-  self& operator+=(difference_type n)
+  self& operator+=(difference_type n)  //使用正向迭代器的减法
   {
     current -= n;
     return *this;
