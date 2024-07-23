@@ -11,7 +11,7 @@ namespace mystl
 {
 
 // move
-
+// 类型退化，返回右值引用
 template <class T>
 typename std::remove_reference<T>::type&& move(T&& arg) noexcept
 {
@@ -19,13 +19,15 @@ typename std::remove_reference<T>::type&& move(T&& arg) noexcept
 }
 
 // forward
-
+// 完美转发，保持参数的左右值属性
+// 如果参数是左值引用，则返回左值引用
 template <class T>
 T&& forward(typename std::remove_reference<T>::type& arg) noexcept
 {
   return static_cast<T&&>(arg);
 }
 
+// 如果参数是右值引用，则返回右值引用
 template <class T>
 T&& forward(typename std::remove_reference<T>::type&& arg) noexcept
 {
@@ -51,6 +53,7 @@ ForwardIter2 swap_range(ForwardIter1 first1, ForwardIter1 last1, ForwardIter2 fi
   return first2;
 }
 
+// 数组专用的 swap
 template <class Tp, size_t N>
 void swap(Tp(&a)[N], Tp(&b)[N])
 {
@@ -75,8 +78,8 @@ struct pair
   // default constructiable
   template <class Other1 = Ty1, class Other2 = Ty2,
     typename = typename std::enable_if<
-    std::is_default_constructible<Other1>::value &&
-    std::is_default_constructible<Other2>::value, void>::type>
+    std::is_default_constructible<Other1>::value &&              // 检查 Other1 和 Other2 是否都具有默认构造函数
+    std::is_default_constructible<Other2>::value, void>::type>   // 如果其中任何一个类型不可以默认构造，则这个构造函数模板不会参与重载集合，编译器会尝试其他匹配的构造函数。
     constexpr pair()
     : first(), second()
   {
@@ -88,13 +91,15 @@ struct pair
     std::is_copy_constructible<U1>::value &&
     std::is_copy_constructible<U2>::value &&
     std::is_convertible<const U1&, Ty1>::value &&
-    std::is_convertible<const U2&, Ty2>::value, int>::type = 0>
+    std::is_convertible<const U2&, Ty2>::value, int>::type = 0>  //typename int = 0 的意思是，模板参数的默认值是 0。在这里，int 代表一个类型，而 0 是默认的值，但实际上它是 std::enable_if 的实现方式的一部分。
     constexpr pair(const Ty1& a, const Ty2& b)
     : first(a), second(b)
   {
   }
 
   // explicit constructible for this type
+  // 显式构造函数，禁止隐式转换
+  // 仅在 U1 和 U2 类型都是可拷贝构造的，并且 U1 或 U2 类型不能隐式转换为 Ty1 或 Ty2 的情况下才会被选择
   template <class U1 = Ty1, class U2 = Ty2,
     typename std::enable_if<
     std::is_copy_constructible<U1>::value &&
@@ -112,10 +117,10 @@ struct pair
   // implicit constructiable for other type
   template <class Other1, class Other2,
     typename std::enable_if<
-    std::is_constructible<Ty1, Other1>::value &&
-    std::is_constructible<Ty2, Other2>::value &&
-    std::is_convertible<Other1&&, Ty1>::value &&
-    std::is_convertible<Other2&&, Ty2>::value, int>::type = 0>
+    std::is_constructible<Ty1, Other1>::value &&                  // Ty1 是否具有 Other1 类型的构造函数
+    std::is_constructible<Ty2, Other2>::value &&                  // Ty2 是否具有 Other2 类型的构造函数
+    std::is_convertible<Other1&&, Ty1>::value &&                  // Other1 是否可以通过类型转换构造 Ty1
+    std::is_convertible<Other2&&, Ty2>::value, int>::type = 0>    // Other2 是否可以通过类型转换构造 Ty2
     constexpr pair(Other1&& a, Other2&& b)
     : first(mystl::forward<Other1>(a)),
     second(mystl::forward<Other2>(b))

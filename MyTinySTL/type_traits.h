@@ -28,6 +28,8 @@ typedef m_bool_constant<false> m_false_type;
 
 // is_pair
 
+// 类型特性系统
+// 允许编译时确定类型属性，支持类型萃取和编译期决策
 // --- forward declaration begin
 template <class T1, class T2>
 struct pair;
