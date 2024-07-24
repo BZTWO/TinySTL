@@ -217,6 +217,7 @@ void* alloc::M_refill(size_t n)  // 内存块大小
   // 如果只有一个区块，就把这个区块返回给调用者，free list 没有增加新节点
   if (nblock == 1)
     return c;
+    
   // 否则把一个区块给调用者，剩下的纳入 free list 作为新节点
   my_free_list = free_list[M_freelist_index(n)];
   result = (FreeList*)c;
