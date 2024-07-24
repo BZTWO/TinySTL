@@ -41,12 +41,14 @@ public:
   static void destroy(T* first, T* last);
 };
 
+// 分配一个 T 类型对象的内存
 template <class T>
 T* allocator<T>::allocate()
 {
   return static_cast<T*>(::operator new(sizeof(T)));
 }
 
+//分配 n 个 T 类型对象的内存
 template <class T>
 T* allocator<T>::allocate(size_type n)
 {
@@ -55,6 +57,7 @@ T* allocator<T>::allocate(size_type n)
   return static_cast<T*>(::operator new(n * sizeof(T)));
 }
 
+// 释放一个 T 类型对象的内存
 template <class T>
 void allocator<T>::deallocate(T* ptr)
 {
@@ -63,6 +66,7 @@ void allocator<T>::deallocate(T* ptr)
   ::operator delete(ptr);
 }
 
+// 释放 n 个 T 类型对象的内存
 template <class T>
 void allocator<T>::deallocate(T* ptr, size_type /*size*/)
 {
@@ -71,24 +75,28 @@ void allocator<T>::deallocate(T* ptr, size_type /*size*/)
   ::operator delete(ptr);
 }
 
+// 构造一个 T 类型对象
 template <class T>
 void allocator<T>::construct(T* ptr)
 {
   mystl::construct(ptr);
 }
 
+// 构造一个 T 类型对象，并初始化为 value
 template <class T>
 void allocator<T>::construct(T* ptr, const T& value)
 {
   mystl::construct(ptr, value);
 }
 
+// 构造一个 T 类型对象，并初始化为 value，使用 move 语义
 template <class T>
  void allocator<T>::construct(T* ptr, T&& value)
 {
   mystl::construct(ptr, mystl::move(value));
 }
 
+// 使用参数包构造对象，完美转发参数
 template <class T>
 template <class ...Args>
  void allocator<T>::construct(T* ptr, Args&& ...args)
@@ -96,12 +104,14 @@ template <class ...Args>
   mystl::construct(ptr, mystl::forward<Args>(args)...);
 }
 
+// 析构一个 T 类型对象
 template <class T>
 void allocator<T>::destroy(T* ptr)
 {
   mystl::destroy(ptr);
 }
 
+// 析构多个对象
 template <class T>
 void allocator<T>::destroy(T* first, T* last)
 {
