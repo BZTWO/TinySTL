@@ -62,6 +62,7 @@ void destroy_cat(ForwardIter first, ForwardIter last, std::false_type)
     destroy(&*first);
 }
 
+// std::is_trivially_destructible<Ty>{} 确定 Ty 是否平凡可析构
 template <class Ty>
 void destroy(Ty* pointer)
 {
