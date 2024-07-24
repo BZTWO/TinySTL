@@ -120,6 +120,27 @@ inline void alloc::deallocate(void* p, size_t n)
   my_free_list = q;
 }
 
+#if 0
+  inline void alloc::deallocate(void* p, size_t n)
+  {
+    if (n > static_cast<size_t>(ESmallObjectBytes))
+    {
+      std::free(p);
+      return;
+    }
+    
+    FreeList* q = reinterpret_cast<FreeList*>(p);
+    FreeList* my_free_list;
+    
+    // 更新自由链表头指针
+    size_t index = M_freelist_index(n);
+    my_free_list = free_list[index];
+    q->next = my_free_list;
+    free_list[index] = q;
+  }
+#endif
+
+
 // 重新分配空间，接受三个参数，参数一为指向新空间的指针，参数二为原来空间的大小，参数三为申请空间的大小
 inline void* alloc::reallocate(void* p, size_t old_size, size_t new_size)
 {
@@ -129,8 +150,10 @@ inline void* alloc::reallocate(void* p, size_t old_size, size_t new_size)
 }
 
 // bytes 对应上调大小
+// 确保了内存块的起始地址符合特定的对齐要求，以提高内存访问效率和避免潜在的对齐错误。
 inline size_t alloc::M_align(size_t bytes)
 {
+  
   if (bytes <= 512)
   {
     return bytes <= 256
@@ -142,10 +165,28 @@ inline size_t alloc::M_align(size_t bytes)
     : EAlign4096;
 }
 
+#if 0
+  inline size_t alloc::M_align(size_t bytes){
+    if (bytes >= 0 && bytes <= 128) {  
+          return EAlign128;  
+      } else if (bytes > 128 && bytes <= 256) {  
+          return EAlign256;  
+      } else if (bytes > 256 && bytes <= 512) {  
+          return EAlign512;  
+      } else if (bytes > 512 && bytes <= 1024) {  
+          return EAlign1024;  
+      } else if (bytes > 1024 && bytes <= 2048) {  
+          return EAlign2048;  
+      } else {  
+          return EAlign4096;  
+      }   
+  }
+#endif
+
 // 将 bytes 上调至对应区间大小
 inline size_t alloc::M_round_up(size_t bytes)
 {
-  return ((bytes + M_align(bytes) - 1) & ~(M_align(bytes) - 1));
+  return ((bytes + M_align(bytes) - 1) & ~(M_align(bytes) - 1));  // 确保向上舍入到对齐边界 使用位掩码来确保结果是对齐的
 }
 
 // 根据区块大小，选择第 n 个 free lists
@@ -167,7 +208,7 @@ inline size_t alloc::M_freelist_index(size_t bytes)
 }
 
 // 重新填充 free list
-void* alloc::M_refill(size_t n)
+void* alloc::M_refill(size_t n)  // 内存块大小
 {
   size_t nblock = 10;
   char* c = M_chunk_alloc(n, nblock);
@@ -176,6 +217,7 @@ void* alloc::M_refill(size_t n)
   // 如果只有一个区块，就把这个区块返回给调用者，free list 没有增加新节点
   if (nblock == 1)
     return c;
+    
   // 否则把一个区块给调用者，剩下的纳入 free list 作为新节点
   my_free_list = free_list[M_freelist_index(n)];
   result = (FreeList*)c;
