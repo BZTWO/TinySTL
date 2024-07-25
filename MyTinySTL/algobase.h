@@ -88,6 +88,7 @@ OutputIter
 unchecked_copy_cat(RandomIter first, RandomIter last, OutputIter result,
                    mystl::random_access_iterator_tag)
 {
+  // 优化的循环
   for (auto n = last - first; n > 0; --n, ++first, ++result)
   {
     *result = *first;
@@ -103,6 +104,7 @@ unchecked_copy(InputIter first, InputIter last, OutputIter result)
 }
 
 // 为 trivially_copy_assignable 类型提供特化版本
+// 去掉 const 类型的 Tp 与 Up 类型相同且 Up 类型是 平凡可复制的特化
 template <class Tp, class Up>
 typename std::enable_if<
   std::is_same<typename std::remove_const<Tp>::type, Up>::value &&
@@ -112,7 +114,7 @@ unchecked_copy(Tp* first, Tp* last, Up* result)
 {
   const auto n = static_cast<size_t>(last - first);
   if (n != 0)
-    std::memmove(result, first, n * sizeof(Up));
+    std::memmove(result, first, n * sizeof(Up));  // 安全的内容复制函数
   return result + n;
 }
 
@@ -218,6 +220,7 @@ mystl::pair<RandomIter, OutputIter>
 unchecked_copy_n(RandomIter first, Size n, OutputIter result, 
                  mystl::random_access_iterator_tag)
 {
+  // 通过迭代器特点，直接计算终止迭代器位置
   auto last = first + n;
   return mystl::pair<RandomIter, OutputIter>(last, mystl::copy(first, last, result));
 }
