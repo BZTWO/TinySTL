@@ -34,10 +34,10 @@ pair<T*, ptrdiff_t> get_buffer_helper(ptrdiff_t len, T*)
   {
     T* tmp = static_cast<T*>(malloc(static_cast<size_t>(len) * sizeof(T)));
     if (tmp)
-      return pair<T*, ptrdiff_t>(tmp, len);
+      return pair<T*, ptrdiff_t>(tmp, len);  // 分配成功
     len /= 2;  // 申请失败时减少 len 的大小
   }
-  return pair<T*, ptrdiff_t>(nullptr, 0);
+  return pair<T*, ptrdiff_t>(nullptr, 0);  // 分配失败
 }
 
 template <class T>
@@ -93,7 +93,7 @@ private:
   { mystl::uninitialized_fill_n(buffer, len, value); }
 
 private:
-  temporary_buffer(const temporary_buffer&);
+  temporary_buffer(const temporary_buffer&);  //  防止无意中拷贝临时缓冲区对象
   void operator=(const temporary_buffer&);
 };
 
@@ -151,6 +151,7 @@ public:
   // 构造、复制、析构函数
   explicit auto_ptr(T* p = nullptr) :m_ptr(p) {}
   auto_ptr(auto_ptr& rhs) :m_ptr(rhs.release()) {}
+
   template <class U>
   auto_ptr(auto_ptr<U>& rhs) : m_ptr(rhs.release()) {}
 
@@ -163,6 +164,7 @@ public:
     }
     return *this;
   }
+  
   template <class U>
   auto_ptr& operator=(auto_ptr<U>& rhs)
   {
