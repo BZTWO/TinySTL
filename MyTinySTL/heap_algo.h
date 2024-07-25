@@ -151,6 +151,9 @@ void pop_heap(RandomIter first, RandomIter last, Compared comp)
 // sort_heap
 // 该函数接受两个迭代器，表示 heap 容器的首尾，不断执行 pop_heap 操作，直到首尾最多相差1
 /*****************************************************************************************/
+
+// [30, 20, 15, 5, 10, 12, 6] =======> [5,6,10,12,15,20,30]
+
 template <class RandomIter>
 void sort_heap(RandomIter first, RandomIter last)
 {
@@ -173,7 +176,7 @@ void sort_heap(RandomIter first, RandomIter last, Compared comp)
 
 /*****************************************************************************************/
 // make_heap
-// 该函数接受两个迭代器，表示 heap 容器的首尾，把容器内的数据变为一个 heap
+// 该函数接受两个迭代器，表示 heap 容器的首尾，把容器内的变为一个 heap
 /*****************************************************************************************/
 template <class RandomIter, class Distance>
 void make_heap_aux(RandomIter first, RandomIter last, Distance*)
