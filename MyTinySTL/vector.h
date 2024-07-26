@@ -100,6 +100,7 @@ public:
     rhs.begin_ = nullptr;
     rhs.end_ = nullptr;
     rhs.cap_ = nullptr;
+    // rhs.cap_ = 0;
   }
 
   vector(std::initializer_list<value_type> ilist)
@@ -110,7 +111,7 @@ public:
   vector& operator=(const vector& rhs);
   vector& operator=(vector&& rhs) noexcept;
 
-  vector& operator=(std::initializer_list<value_type> ilist)
+  vector& operator=(std::initializer_list<value_type> ilist)  // 初始化列表赋值运算符重载
   {
     vector tmp(ilist.begin(), ilist.end());
     swap(tmp);
@@ -670,6 +671,7 @@ copy_assign(IIter first, IIter last, input_iterator_tag)
   {
     *cur = *first;
   }
+
   if (first == last)
   {
     erase(cur, end_);
@@ -708,7 +710,7 @@ copy_assign(FIter first, FIter last, forward_iterator_tag)
   }
 }
 
-// 重新分配空间并在 pos 处就地构造元素
+// 重新分配空间并在当前元素 pos 处就地构造元素
 template <class T>
 template <class ...Args>
 void vector<T>::
@@ -775,6 +777,8 @@ fill_insert(iterator pos, size_type n, const value_type& value)
   { // 如果备用空间大于等于增加的空间
     const size_type after_elems = end_ - pos;
     auto old_end = end_;
+    // 如果 pos 后面的元素个数大于要插入的元素个数   
+    // 直接向后扩展 n 个元素，再将要移动后面的元素 move 到 pos + n 后面
     if (after_elems > n)
     {
       mystl::uninitialized_copy(end_ - n, end_, end_);
@@ -784,6 +788,7 @@ fill_insert(iterator pos, size_type n, const value_type& value)
     }
     else
     {
+      // 
       end_ = mystl::uninitialized_fill_n(end_, n - after_elems, value_copy);
       end_ = mystl::uninitialized_move(pos, old_end, end_);
       mystl::uninitialized_fill_n(pos, after_elems, value_copy);
