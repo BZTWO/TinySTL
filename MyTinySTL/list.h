@@ -472,7 +472,7 @@ public:
   }
 
   // pop_front / pop_back
-
+  //单个结点与 list 分离，然后销毁该结点
   void pop_front() 
   {
     MYSTL_DEBUG(!empty());
