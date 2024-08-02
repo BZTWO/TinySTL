@@ -70,6 +70,7 @@ void push_heap(RandomIter first, RandomIter last, Compared comp)
 // pop_heap
 // 该函数接受两个迭代器，表示 heap 容器的首尾，将 heap 的根节点取出放到容器尾部，调整 heap
 /*****************************************************************************************/
+
 template <class RandomIter, class T, class Distance>
 void adjust_heap(RandomIter first, Distance holeIndex, Distance len, T value)
 {
@@ -109,6 +110,8 @@ void pop_heap(RandomIter first, RandomIter last)
 }
 
 // 重载版本使用函数对象 comp 代替比较操作
+// 调整堆结构以保持堆的性质
+// 位于 holeIndex 的值，先下溯调整(去掉该元素后的子树)，再上溯(插入该元素的子树)
 template <class RandomIter, class T, class Distance, class Compared>
 void adjust_heap(RandomIter first, Distance holeIndex, Distance len, T value,
                  Compared comp)
@@ -202,13 +205,15 @@ void make_heap(RandomIter first, RandomIter last)
 }
 
 // 重载版本使用函数对象 comp 代替比较操作
+// 将一段随机访问迭代器范围 [first, last) 转换为一个堆
+// 这是通过从最后一个非叶节点开始调整堆来实现的
 template <class RandomIter, class Distance, class Compared>
 void make_heap_aux(RandomIter first, RandomIter last, Distance*, Compared comp)
 {
   if (last - first < 2)
     return;
   auto len = last - first;
-  auto holeIndex = (len - 2) / 2;
+  auto holeIndex = (len - 2) / 2;  // // 找到最后一个非叶节点的位置
   while (true)
   {
     // 重排以 holeIndex 为首的子树
@@ -219,6 +224,7 @@ void make_heap_aux(RandomIter first, RandomIter last, Distance*, Compared comp)
   }
 }
 
+// 调整子树根据 comp 为大堆或小堆
 template <class RandomIter, class Compared>
 void make_heap(RandomIter first, RandomIter last, Compared comp)
 {
