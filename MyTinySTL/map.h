@@ -14,6 +14,7 @@
 //   * insert
 
 #include "rb_tree.h"
+#include <vector>
 
 namespace mystl
 {
