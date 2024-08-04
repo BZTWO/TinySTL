@@ -223,6 +223,7 @@ public:
   const_iterator find(const key_type& key)  const 
   { return ht_.find(key); }
 
+  // 查找与给定键相等的所有元素
   pair<iterator, iterator> equal_range(const key_type& key)
   { return ht_.equal_range_unique(key); }
   pair<const_iterator, const_iterator> equal_range(const key_type& key) const
@@ -255,7 +256,7 @@ public:
   { return ht_.bucket(key); }
 
   // hash policy
-
+  // 计算哈希表的负载因子
   float     load_factor()            const noexcept { return ht_.load_factor(); }
 
   float     max_load_factor()        const noexcept { return ht_.max_load_factor(); }
