@@ -442,7 +442,7 @@ public:
   { ht_.swap(other.ht_); }
 
   // 查找相关
-
+  // 出现次数
   size_type      count(const key_type& key) const 
   { return ht_.count(key); }
 

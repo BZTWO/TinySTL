@@ -54,6 +54,7 @@ struct rb_tree_value_traits_imp
   }
 };
 
+// 简化和规范化 pair 类型值在红黑树（rb_tree）数据结构中的使用
 template <class T>
 struct rb_tree_value_traits_imp<T, true>
 {
@@ -475,7 +476,9 @@ void rb_tree_rotate_right(NodePtr x, NodePtr& root) noexcept
 // 插入节点后使 rb tree 重新平衡，参数一为新增节点，参数二为根节点
 //
 // case 1: 新增节点位于根节点，令新增节点为黑
+//
 // case 2: 新增节点的父节点为黑，没有破坏平衡，直接返回
+//
 // case 3: 父节点和叔叔节点都为红，令父节点和叔叔节点为黑，祖父节点为红，
 //         然后令祖父节点为当前节点，继续处理
 // case 4: 父节点为红，叔叔节点为 NIL 或黑色，父节点为左（右）孩子，当前节点为右（左）孩子，
@@ -903,7 +906,8 @@ public:
 
   iterator       upper_bound(const key_type& key);
   const_iterator upper_bound(const key_type& key) const;
-
+  
+  // 查找 key 的范围
   mystl::pair<iterator, iterator>             
   equal_range_multi(const key_type& key)
   {
@@ -1340,7 +1344,7 @@ lower_bound(const key_type& key) const
   return const_iterator(y);
 }
 
-// 键值不小于 key 的最后一个位置
+// 键值大于 key 的第一个位置
 template <class T, class Compare>
 typename rb_tree<T, Compare>::iterator
 rb_tree<T, Compare>::

@@ -100,6 +100,11 @@ struct ht_value_traits
 
 
 // forward declaration
+// hashtable：哈希表的主要模板类
+// ht_iterator：哈希表的普通迭代器
+// ht_const_iterator：哈希表的常量迭代器
+// ht_local_iterator：用于访问单个桶内元素的局部迭代器
+// ht_const_local_iterator：用于访问单个桶内元素的常量局部迭代器
 
 template <class T, class HashFun, class KeyEqual>
 class hashtable;
@@ -512,9 +517,9 @@ private:
   bucket_type buckets_;
   size_type   bucket_size_;
   size_type   size_;
-  float       mlf_;
-  hasher      hash_;
-  key_equal   equal_;
+  float       mlf_;  // 控制哈希表的重新哈希策略
+  hasher      hash_;  // 用于计算键的哈希值
+  key_equal   equal_;  // 键比较函数对象
 
 private:
   bool is_equal(const key_type& key1, const key_type& key2)
@@ -749,7 +754,8 @@ public:
 
   float load_factor() const noexcept
   { return bucket_size_ != 0 ? (float)size_ / bucket_size_ : 0.0f; }
-
+  
+  // 返回最大负载因子
   float max_load_factor() const noexcept
   { return mlf_; }
   void max_load_factor(float ml)
@@ -759,7 +765,9 @@ public:
   }
 
   void rehash(size_type count);
-
+      
+  // 桶数量=( 预计元素数量 / 最大负载因子 + 0.5 )
+  // 确保哈希表有足够的容量来存储至少 count 个元素
   void reserve(size_type count)
   { rehash(static_cast<size_type>((float)count / max_load_factor() + 0.5f)); }
 
@@ -1069,7 +1077,7 @@ clear()
   }
 }
 
-// 在某个 bucket 节点的个数
+// 返回指定桶 n 中的元素数量
 template <class T, class Hash, class KeyEqual>
 typename hashtable<T, Hash, KeyEqual>::size_type
 hashtable<T, Hash, KeyEqual>::
@@ -1084,6 +1092,7 @@ bucket_size(size_type n) const noexcept
 }
 
 // 重新对元素进行一遍哈希，插入到新的位置
+// 增加 or 减少桶
 template <class T, class Hash, class KeyEqual>
 void hashtable<T, Hash, KeyEqual>::
 rehash(size_type count)
@@ -1264,7 +1273,7 @@ swap(hashtable& rhs) noexcept
 /****************************************************************************************/
 // helper function
 
-// init 函数
+// init 函数 桶函数指针初始化
 template <class T, class Hash, class KeyEqual>
 void hashtable<T, Hash, KeyEqual>::
 init(size_type n)
@@ -1320,6 +1329,7 @@ copy_init(const hashtable& ht)
 }
 
 // create_node 函数
+// 创建一个新的节点，初始化节点的值，并设置节点的 next 指针为 nullptr
 template <class T, class Hash, class KeyEqual>
 template <class ...Args>
 typename hashtable<T, Hash, KeyEqual>::node_ptr
@@ -1351,6 +1361,7 @@ destroy_node(node_ptr node)
 }
 
 // next_size 函数
+// 返回大小
 template <class T, class Hash, class KeyEqual>
 typename hashtable<T, Hash, KeyEqual>::size_type
 hashtable<T, Hash, KeyEqual>::next_size(size_type n) const
@@ -1358,7 +1369,7 @@ hashtable<T, Hash, KeyEqual>::next_size(size_type n) const
   return ht_next_prime(n);
 }
 
-// hash 函数
+// hash 函数返回 hash 后的 key 值
 template <class T, class Hash, class KeyEqual>
 typename hashtable<T, Hash, KeyEqual>::size_type
 hashtable<T, Hash, KeyEqual>::
@@ -1376,6 +1387,7 @@ hash(const key_type& key) const
 }
 
 // rehash_if_need 函数
+//判断是否进行并完成 rehash 
 template <class T, class Hash, class KeyEqual>
 void hashtable<T, Hash, KeyEqual>::
 rehash_if_need(size_type n)
@@ -1485,6 +1497,7 @@ insert_node_unique(node_ptr np)
 }
 
 // replace_bucket 函数
+// 重新分配桶
 template <class T, class Hash, class KeyEqual>
 void hashtable<T, Hash, KeyEqual>::
 replace_bucket(size_type bucket_count)
@@ -1500,6 +1513,7 @@ replace_bucket(size_type bucket_count)
         const auto n = hash(value_traits::get_key(first->value), bucket_count);
         auto f = bucket[n];
         bool is_inserted = false;
+        // 检查新桶中是否存在具有相同键的元素，如果存在，将新节点插入到相同键的元素后面
         for (auto cur = f; cur; cur = cur->next)
         {
           if (is_equal(value_traits::get_key(cur->value), value_traits::get_key(first->value)))
@@ -1510,6 +1524,7 @@ replace_bucket(size_type bucket_count)
             break;
           }
         }
+        // 否则，将新节点插入到桶的开头
         if (!is_inserted)
         {
           tmp->next = f;
@@ -1565,6 +1580,7 @@ erase_bucket(size_type n, node_ptr last)
 }
 
 // equal_to 函数
+// 检查两个哈希表是否在内容上完全相等
 template <class T, class Hash, class KeyEqual>
 bool hashtable<T, Hash, KeyEqual>::equal_to_multi(const hashtable& other)
 {

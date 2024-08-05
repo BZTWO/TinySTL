@@ -21,6 +21,7 @@
 #include "memory.h"
 #include "util.h"
 #include "exceptdef.h"
+#include <deque>
 
 namespace mystl
 {
@@ -860,6 +861,7 @@ deque<T>::create_map(size_type size)
 }
 
 // create_buffer 函数
+// 为 map_ 下的 buffer 申请空间
 template <class T>
 void deque<T>::
 create_buffer(map_pointer nstart, map_pointer nfinish)
@@ -1074,6 +1076,7 @@ insert_aux(iterator position, Args&& ...args)
 }
 
 // fill_insert 函数
+// 在指定位置插入多个元素
 template <class T>
 void deque<T>::
 fill_insert(iterator position, size_type n, const value_type& value)
@@ -1092,10 +1095,11 @@ fill_insert(iterator position, size_type n, const value_type& value)
     {
       if (elems_before >= n)
       {
+        // elems_before == n(未初始化) + (position - begin_n_)(已初始化)
         auto begin_n = begin_ + n;
-        mystl::uninitialized_copy(begin_, begin_n, new_begin);
+        mystl::uninitialized_copy(begin_, begin_n, new_begin);  // 先复制到未初始化，新申请内存空间上
         begin_ = new_begin;
-        mystl::copy(begin_n, position, old_begin);
+        mystl::copy(begin_n, position, old_begin);  // 超出 n 的部分复制到begin_ 
         mystl::fill(position - n, position, value_copy);
       }
       else
@@ -1149,6 +1153,7 @@ fill_insert(iterator position, size_type n, const value_type& value)
 }
 
 // copy_insert
+// 插入一段元素，并且确保容器内部的元素和内存都正确地调整和更新
 template <class T>
 template <class FIter>
 void deque<T>::
@@ -1227,7 +1232,7 @@ copy_insert(iterator position, FIter first, FIter last, size_type n)
   }
 }
 
-// insert_dispatch 函数
+// insert_dispatch 函数 ==》 根据情况申请新空间，
 template <class T>
 template <class IIter>
 void deque<T>::
@@ -1236,19 +1241,19 @@ insert_dispatch(iterator position, IIter first, IIter last, input_iterator_tag)
   if (last <= first)  return;
   const size_type n = mystl::distance(first, last);
   const size_type elems_before = position - begin_;
-  if (elems_before < (size() / 2))
+  if (elems_before < (size() / 2))  // 判断插入位置是否在前半部分
   {
-    require_capacity(n, true);
+    require_capacity(n, true);  // 在前面扩展容量
   }
   else
   {
-    require_capacity(n, false);
+    require_capacity(n, false);  // 在后面扩展容量
   }
   position = begin_ + elems_before;
   auto cur = --last;
   for (size_type i = 0; i < n; ++i, --cur)
   {
-    insert(position, *cur);
+    insert(position, *cur);  // 就地构建元素
   }
 }
 
@@ -1298,9 +1303,11 @@ insert_dispatch(iterator position, FIter first, FIter last, forward_iterator_tag
 }
 
 // require_capacity 函数
+// 判断是否有足够空间 -- true 前面插入新空间 false 后面插入新空间
 template <class T>
 void deque<T>::require_capacity(size_type n, bool front)
 {
+  // 前面
   if (front && (static_cast<size_type>(begin_.cur - begin_.first) < n))
   {
     const size_type need_buffer = (n - (begin_.cur - begin_.first)) / buffer_size + 1;
@@ -1311,6 +1318,7 @@ void deque<T>::require_capacity(size_type n, bool front)
     }
     create_buffer(begin_.node - need_buffer, begin_.node - 1);
   }
+  // 后面
   else if (!front && (static_cast<size_type>(end_.last - end_.cur - 1) < n))
   {
     const size_type need_buffer = (n - (end_.last - end_.cur - 1)) / buffer_size + 1;
@@ -1324,6 +1332,7 @@ void deque<T>::require_capacity(size_type n, bool front)
 }
 
 // reallocate_map_at_front 函数
+// 开辟前面新空间，将缓存区指针指向原来的 buffer 
 template <class T>
 void deque<T>::reallocate_map_at_front(size_type need_buffer)
 {
@@ -1350,6 +1359,7 @@ void deque<T>::reallocate_map_at_front(size_type need_buffer)
 }
 
 // reallocate_map_at_back 函数
+// 开辟后面新空间，将指针指向原来的 buffer 
 template <class T>
 void deque<T>::reallocate_map_at_back(size_type need_buffer)
 {

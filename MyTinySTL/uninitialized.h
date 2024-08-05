@@ -44,7 +44,8 @@ unchecked_uninit_copy(InputIter first, InputIter last, ForwardIter result, std::
 }
 
 template <class InputIter, class ForwardIter>
-ForwardIter uninitialized_copy(InputIter first, InputIter last, ForwardIter result)
+ForwardIter 
+uninitialized_copy(InputIter first, InputIter last, ForwardIter result)
 {
   return mystl::unchecked_uninit_copy(first, last, result, 
                                      std::is_trivially_copy_assignable<
@@ -84,7 +85,8 @@ unchecked_uninit_copy_n(InputIter first, Size n, ForwardIter result, std::false_
 }
 
 template <class InputIter, class Size, class ForwardIter>
-ForwardIter uninitialized_copy_n(InputIter first, Size n, ForwardIter result)
+ForwardIter 
+uninitialized_copy_n(InputIter first, Size n, ForwardIter result)
 {
   return mystl::unchecked_uninit_copy_n(first, n, result,
                                         std::is_trivially_copy_assignable<

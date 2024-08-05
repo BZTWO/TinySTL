@@ -55,7 +55,7 @@ public:
     :c_(ilist.begin(), ilist.end()) 
   {
   }
-
+  // deque ==> queue
   queue(const Container& c) 
     :c_(c) 
   {
