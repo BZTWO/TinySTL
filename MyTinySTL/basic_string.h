@@ -50,9 +50,12 @@ struct char_traits
     return r;
   }
 
+  // 如果目标位置在源位置之前，从前向后拷贝
+  // 如果源位置在目标位置之前，从后向前拷贝
+  // 安全地处理重叠的内存区域
   static char_type* move(char_type* dst, const char_type* src, size_t n)
   {
-    char_type* r = dst;
+    char_type* r = dst;  // 保存目标指针的起始位置以供返回
     if (dst < src)
     {
       for (; n != 0; --n, ++dst, ++src)
@@ -68,6 +71,7 @@ struct char_traits
     return r;
   }
 
+  // 用指定的字符填充一块内存区域
   static char_type* fill(char_type* dst, char_type ch, size_t count)
   {
     char_type* r = dst;
@@ -1652,6 +1656,7 @@ copy_init(Iter first, Iter last, mystl::forward_iterator_tag)
 }
 
 // init_from 函数
+// 从源位置复制到目标位置
 template <class CharType, class CharTraits>
 void basic_string<CharType, CharTraits>::
 init_from(const_pointer src, size_type pos, size_type count)
@@ -1688,6 +1693,7 @@ to_raw_pointer() const
 }
 
 // reinsert 函数
+// 重新分配空间并转移
 template <class CharType, class CharTraits>
 void basic_string<CharType, CharTraits>::
 reinsert(size_type size)
